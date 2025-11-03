@@ -186,10 +186,10 @@ def place_order_web(csrftoken, p20t, orderAmount, timeIncrements, symbolName, pa
     return response.json()
 
 if __name__ == "__main__":
-    get_token(reset=False) # 设置 reset=True 清除浏览器缓存
-    with open("token.json", "r") as f:
-        token_dict = json.load(f)
-    csrftoken = token_dict["csrftoken"]
-    p20t = token_dict["p20t"]
-    result = place_order_web(csrftoken=csrftoken, p20t=p20t, orderAmount="5", timeIncrements="TEN_MINUTE", symbolName="BTCUSDT", payoutRatio="0.80", direction="LONG")
-    print("下单结果:", result)
+    get_token(reset=True) # 设置 reset=True 清除浏览器缓存
+    # with open("token.json", "r") as f:
+    #     token_dict = json.load(f)
+    # csrftoken = token_dict["csrftoken"]
+    # p20t = token_dict["p20t"]
+    # result = place_order_web(csrftoken=csrftoken, p20t=p20t, orderAmount="5", timeIncrements="TEN_MINUTE", symbolName="BTCUSDT", payoutRatio="0.80", direction="LONG")
+    # print("下单结果:", result)
