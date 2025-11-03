@@ -11,6 +11,8 @@ from playwright.sync_api import sync_playwright
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 
+WIN_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+
 def launch_persistent_ctx(pw, reset=False):
     user_data_dir = os.path.expanduser("~/.config/playwright-binance")
     if reset:
@@ -31,9 +33,38 @@ def launch_persistent_ctx(pw, reset=False):
         ],
         viewport={"width": 1280, "height": 960},
         locale="zh-CN",
+        user_agent=WIN_UA,
+        extra_http_headers={
+            "sec-ch-ua-platform": '"Windows"',
+            "sec-ch-ua-mobile": "?0",
+            "accept-language": "zh-CN,zh;q=0.9"
+        },
     )
 
     return pw.chromium.launch_persistent_context(**common_kwargs)
+
+def apply_windows_ua(ctx, page):
+    page.add_init_script(f"""
+        Object.defineProperty(navigator, 'userAgent', {{get: () => '{WIN_UA}' }});
+        Object.defineProperty(navigator, 'platform',  {{get: () => 'Win32' }});
+        Object.defineProperty(navigator, 'vendor',    {{get: () => 'Google Inc.' }});
+        Object.defineProperty(navigator, 'maxTouchPoints', {{get: () => 0 }});
+    """)
+    try:
+        s = ctx.new_cdp_session(page)
+        s.send("Emulation.setUserAgentOverride", {
+            "userAgent": WIN_UA,
+            "platform": "Windows",
+            "acceptLanguage": "zh-CN,zh;q=0.9"
+        })
+    except:
+        pass
+
+    ctx.set_extra_http_headers({
+        "sec-ch-ua-platform": '"Windows"',
+        "sec-ch-ua-mobile": "?0",
+        "accept-language": "zh-CN,zh;q=0.9"
+    })
 
 def print_qr(data):
     qr = qrcode.QRCode(border=0)
@@ -68,12 +99,13 @@ def get_token(reset=False):
     with sync_playwright() as pw:
         ctx = launch_persistent_ctx(pw, reset=reset)
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
+        apply_windows_ua(ctx, page)
 
         qr_results = []
 
         def update_p20t_from_context():
             try:
-                cookies = ctx.cookies(["https://accounts.binance.com", "https://www.binance.com"])
+                cookies = ctx.cookies("https://www.binance.com")
                 c = next((c for c in cookies if c.get("name") == "p20t"), None)
                 token = c.get("value", "")
                 if not token: return
@@ -186,7 +218,7 @@ def place_order_web(csrftoken, p20t, orderAmount, timeIncrements, symbolName, pa
     return response.json()
 
 if __name__ == "__main__":
-    get_token(reset=True) # 设置 reset=True 清除浏览器缓存
+    get_token(reset=False) # 设置 reset=True 清除浏览器缓存
     # with open("token.json", "r") as f:
     #     token_dict = json.load(f)
     # csrftoken = token_dict["csrftoken"]
