@@ -11,10 +11,6 @@ from playwright.sync_api import sync_playwright
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 
-csrftoken = ""
-p20t = ""
-expirationTimestamp = -1
-
 def launch_persistent_ctx(pw, reset=False):
     user_data_dir = os.path.expanduser("~/.config/playwright-binance")
     if reset:
@@ -39,8 +35,36 @@ def launch_persistent_ctx(pw, reset=False):
 
     return pw.chromium.launch_persistent_context(**common_kwargs)
 
+def print_qr(data):
+    qr = qrcode.QRCode(border=0)
+    qr.add_data(data)
+    qr.make(fit=True)
+    m = qr.get_matrix()
+
+    black = "  "
+    white = "██"
+    scale = 1
+    margin = 1
+    w = len(m[0])
+
+    for _ in range(margin * scale):
+        print(white * (w + margin * 2))
+
+    for row in m:
+        line = white * margin
+        for v in row:
+            line += (black if v else white) * scale
+        line += white * margin
+        for _ in range(scale):
+            print(line)
+
+    for _ in range(margin * scale):
+        print(white * (w + margin * 2))
 
 def get_token(reset=False):
+    csrftoken = ""
+    p20t = ""
+    expirationTimestamp = -1
     with sync_playwright() as pw:
         ctx = launch_persistent_ctx(pw, reset=reset)
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
@@ -53,7 +77,7 @@ def get_token(reset=False):
                 c = next((c for c in cookies if c.get("name") == "p20t"), None)
                 token = c.get("value", "")
                 if not token: return
-                global p20t
+                nonlocal p20t
                 p20t = token
             except:
                 pass
@@ -64,7 +88,7 @@ def get_token(reset=False):
                 if "https://www.binance.com/fapi/v1/ticker/24hr" in url:
                     token = req.headers.get("csrftoken", "")
                     if not token: return
-                    global csrftoken
+                    nonlocal csrftoken
                     csrftoken = token
             except:
                 pass
@@ -81,11 +105,8 @@ def get_token(reset=False):
                     if code not in qr_results:
                         qr_results.append(code)
                         print("请使用 Binance App 扫描以下二维码登录")
-                        qr = qrcode.QRCode()
-                        qr.add_data(code)
-                        qr.print_ascii(invert=True)
-                        img = qr.make_image(fill_color="black", back_color="white")
-                        img = img.convert("RGB")
+                        print_qr(code)
+                        img = qrcode.make(code).convert("RGB")
                         img.save("qrcode.jpg", format="JPEG", quality=100)
                 elif "https://accounts.binance.com/bapi/accounts/v2/private/authcenter/setTrustDevice" in url:
                     resp = req.response()
@@ -96,7 +117,7 @@ def get_token(reset=False):
                     sc_values = [h.get("value", "") for h in hdrs_arr if h.get("name", "").lower() == "set-cookie"]
                     m = next((m for sc in sc_values for m in SimpleCookie(sc).values() if m.key == "p20t"), None)
                     if not m: return
-                    global p20t, expirationTimestamp
+                    nonlocal p20t, expirationTimestamp
                     p20t = m.value
                     expirationTimestamp = int(m["max-age"]) + int(parsedate_to_datetime(date_hdr).timestamp())
             except:
@@ -113,10 +134,18 @@ def get_token(reset=False):
             page.wait_for_timeout(1500)
 
             if csrftoken and p20t:
+                token_dict = {"csrftoken": csrftoken, "p20t": p20t, "expirationTimestamp": expirationTimestamp}
+                if os.path.exists("token.json"):
+                    with open("token.json", "r") as f:
+                        old_token_dict = json.load(f)
+                    if token_dict["p20t"] != old_token_dict.get("p20t", "") or token_dict["csrftoken"] != old_token_dict.get("csrftoken", ""):
+                        print("检测到 p20t 或 csrftoken 变更，已更新 token.json 文件")
+                    elif token_dict["expirationTimestamp"] == -1:
+                        expirationTimestamp = old_token_dict.get("expirationTimestamp", -1)
+                        token_dict["expirationTimestamp"] = expirationTimestamp
                 print("csrftoken:", csrftoken)
                 print("p20t:", p20t)
                 print("expirationTimestamp:", expirationTimestamp)
-                token_dict = {"csrftoken": csrftoken, "p20t": p20t, "expirationTimestamp": expirationTimestamp}
                 with open("token.json", "w") as f:
                     f.write(json.dumps(token_dict, indent=4, ensure_ascii=False))
                 ctx.close()
@@ -138,7 +167,7 @@ def get_token(reset=False):
             except:
                 pass
 
-def place_order_web():
+def place_order_web(csrftoken, p20t, orderAmount, timeIncrements, symbolName, payoutRatio, direction):
     url = "https://www.binance.com/bapi/futures/v1/private/future/event-contract/place-order"
     headers = {
         "content-type": "application/json",
@@ -147,16 +176,20 @@ def place_order_web():
         "cookie": f"p20t={p20t}"
     }
     data = {
-        "orderAmount": "5",
-        "timeIncrements": "TEN_MINUTE",
-        "symbolName": "BTCUSDT",
-        "payoutRatio": "0.80",
-        "direction": "LONG"
+        "orderAmount": orderAmount,
+        "timeIncrements": timeIncrements,
+        "symbolName": symbolName,
+        "payoutRatio": payoutRatio,
+        "direction": direction
     }
     response = requests.post(url, headers=headers, json=data)
     return response.json()
 
 if __name__ == "__main__":
     get_token(reset=False) # 设置 reset=True 清除浏览器缓存
-    # result = place_order_web()
-    # print("下单结果:", result)
+    with open("token.json", "r") as f:
+        token_dict = json.load(f)
+    csrftoken = token_dict["csrftoken"]
+    p20t = token_dict["p20t"]
+    result = place_order_web(csrftoken=csrftoken, p20t=p20t, orderAmount="5", timeIncrements="TEN_MINUTE", symbolName="BTCUSDT", payoutRatio="0.80", direction="LONG")
+    print("下单结果:", result)
