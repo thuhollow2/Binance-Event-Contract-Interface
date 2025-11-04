@@ -13,24 +13,25 @@ os.chdir(current_dir)
 
 WIN_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
 
-def launch_persistent_ctx(pw, reset=False):
+def launch_persistent_ctx(pw, reset=False, headless=True):
     user_data_dir = os.path.expanduser("~/.config/playwright-binance")
     if reset:
         if os.path.exists(user_data_dir):
             shutil.rmtree(user_data_dir)
 
-    headless = os.environ.get("HEADLESS", "1").lower() in ("1", "true", "yes")
+    args = [
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--window-size=1280,960",
+    ]
+
+    if headless:
+        args += ["--headless=new", "--disable-gpu"]
 
     common_kwargs = dict(
         user_data_dir=user_data_dir,
         headless=headless,
-        args=[
-            "--no-first-run",
-            "--no-default-browser-check",
-            "--headless=new",
-            "--disable-gpu",
-            "--window-size=1280,960"
-        ],
+        args=args,
         viewport={"width": 1280, "height": 960},
         locale="zh-CN",
         user_agent=WIN_UA,
@@ -50,6 +51,7 @@ def apply_windows_ua(ctx, page):
         Object.defineProperty(navigator, 'vendor', {{get: () => 'Google Inc.' }});
         Object.defineProperty(navigator, 'maxTouchPoints', {{get: () => 0 }});
     """)
+
     try:
         s = ctx.new_cdp_session(page)
         s.send("Emulation.setUserAgentOverride", {
@@ -92,12 +94,12 @@ def print_qr(data):
     for _ in range(margin * scale):
         print(white * (w + margin * 2))
 
-def get_token(reset=False):
+def get_token(reset=False, headless=True):
     csrftoken = ""
     p20t = ""
     expirationTimestamp = -1
     with sync_playwright() as pw:
-        ctx = launch_persistent_ctx(pw, reset=reset)
+        ctx = launch_persistent_ctx(pw, reset=reset, headless=headless)
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
         apply_windows_ua(ctx, page)
 
@@ -184,6 +186,15 @@ def get_token(reset=False):
 
             try:
                 if "accounts.binance.com" in page.url:
+                    if page.get_by_text(re.compile("Understand")).count() > 0:
+                        page.get_by_role("button", name=re.compile("Understand")).first.click(timeout=1200, force=True)
+
+                    if page.get_by_text(re.compile("知道了")).count() > 0:
+                        page.get_by_role("button", name=re.compile("知道了")).first.click(timeout=1200, force=True)
+
+                    if page.get_by_text(re.compile("好的")).count() > 0:
+                        page.get_by_role("button", name=re.compile("好的")).first.click(timeout=1200, force=True)
+
                     if page.get_by_text(re.compile("登录")).count() > 0 and page.get_by_text(re.compile("邮箱/手机号码")).count() > 0 and page.get_by_text(re.compile("用手机相机扫描")).count() == 0:
                         page.get_by_role("button", name=re.compile("登录")).first.click(timeout=1200, force=True)
 
@@ -194,7 +205,6 @@ def get_token(reset=False):
                         page.get_by_role("button", name=re.compile("是")).first.click(timeout=1200, force=True)
                 else:
                     update_p20t_from_context()
-
             except:
                 pass
 
@@ -217,7 +227,7 @@ def place_order_web(csrftoken, p20t, orderAmount, timeIncrements, symbolName, pa
     return response.json()
 
 if __name__ == "__main__":
-    get_token(reset=False) # 设置 reset=True 清除浏览器缓存
+    get_token(reset=False, headless=True) # 设置 reset=True 清除浏览器缓存, headless=False 显示浏览器界面
     # with open("token.json", "r") as f:
     #     token_dict = json.load(f)
     # csrftoken = token_dict["csrftoken"]
