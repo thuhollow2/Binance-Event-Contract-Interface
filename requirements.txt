@@ -2,3 +2,5 @@ requests
 playwright
 qrcode
 pillow
+Appium-Python-Client
+selenium
