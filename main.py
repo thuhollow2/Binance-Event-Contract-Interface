@@ -178,6 +178,9 @@ def get_token(reset=False, headless=True):
                         print("检测到 p20t 或 csrftoken 变更, 已更新 token.json 文件")
                     elif token_dict["expirationTimestamp"] == -1:
                         expirationTimestamp = old_token_dict.get("expirationTimestamp", -1)
+                else:
+                    with open("token.json", "w") as f:
+                        f.write(json.dumps(token_dict, indent=4, ensure_ascii=False))
                 print("csrftoken:", csrftoken)
                 print("p20t:", p20t)
                 print("expirationTimestamp:", expirationTimestamp)
@@ -227,7 +230,7 @@ def place_order_web(csrftoken, p20t, orderAmount, timeIncrements, symbolName, pa
     return response.json()
 
 if __name__ == "__main__":
-    get_token(reset=False, headless=True) # 设置 reset=True 清除浏览器缓存, headless=False 显示浏览器界面
+    get_token(reset=True, headless=True) # 设置 reset=True 清除浏览器缓存, headless=False 显示浏览器界面
     # with open("token.json", "r") as f:
     #     token_dict = json.load(f)
     # csrftoken = token_dict["csrftoken"]
