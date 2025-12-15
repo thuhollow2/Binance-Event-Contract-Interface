@@ -237,4 +237,3 @@ if __name__ == "__main__":
     # p20t = token_dict["p20t"]
     # result = place_order_web(csrftoken=csrftoken, p20t=p20t, orderAmount="5", timeIncrements="TEN_MINUTE", symbolName="BTCUSDT", payoutRatio="0.80", direction="LONG")
     # print("下单结果:", result)
-
