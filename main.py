@@ -212,7 +212,7 @@ def get_token(reset=False, headless=True):
                 pass
 
 def place_order_web(csrftoken, p20t, orderAmount, timeIncrements, symbolName, payoutRatio, direction):
-    url = "https://www.binance.com/bapi/futures/v1/private/future/event-contract/place-order"
+    url = "https://www.binance.com/bapi/futures/v2/private/future/event-contract/place-order"
     headers = {
         "content-type": "application/json",
         "clienttype": "web",
@@ -237,3 +237,4 @@ if __name__ == "__main__":
     # p20t = token_dict["p20t"]
     # result = place_order_web(csrftoken=csrftoken, p20t=p20t, orderAmount="5", timeIncrements="TEN_MINUTE", symbolName="BTCUSDT", payoutRatio="0.80", direction="LONG")
     # print("下单结果:", result)
+
