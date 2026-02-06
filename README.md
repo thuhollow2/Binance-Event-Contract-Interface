@@ -7,7 +7,7 @@
 - 对于 App 端，cURL bash 接口为
 
 ```shell
-curl 'https://www.binance.com/bapi/futures/v1/private/future/event-contract/place-order' \
+curl 'https://www.binance.com/bapi/futures/v2/private/future/event-contract/place-order' \
   -H 'content-type: application/json' \
   -H 'clienttype: android' \
   -H 'x-token: app.242414123.80946DCA4C235E37B129E4D387E11B51' \
@@ -18,7 +18,7 @@ curl 'https://www.binance.com/bapi/futures/v1/private/future/event-contract/plac
 - 对于 Web 端，cURL bash 接口为
 
 ```shell
-curl 'https://www.binance.com/bapi/futures/v1/private/future/event-contract/place-order' \
+curl 'https://www.binance.com/bapi/futures/v2/private/future/event-contract/place-order' \
   -H 'content-type: application/json' \
   -H 'clienttype: web' \
   -H 'csrftoken: 93126d6c61eca80cc05349E5d1a8bb4a' \
@@ -55,5 +55,6 @@ playwright install-deps
 ```shell
 python main.py
 ```
+
 
 即可运行脚本，脚本会在当前目录下生成 `token.json` 文件保存 Web 端凭证信息（`csrftoken`、`p20t`、`expirationTimestamp`）；用户可根据需要调用 `place_order_web()` 函数进行下单操作。
