@@ -15,9 +15,8 @@ WIN_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, l
 
 def launch_persistent_ctx(pw, reset=False, headless=True):
     user_data_dir = os.path.expanduser("~/.config/playwright-binance")
-    if reset:
-        if os.path.exists(user_data_dir):
-            shutil.rmtree(user_data_dir)
+    if reset and os.path.exists(user_data_dir):
+        shutil.rmtree(user_data_dir)
 
     args = [
         "--no-first-run",
@@ -189,23 +188,32 @@ def get_token(reset=False, headless=True):
 
             try:
                 if "accounts.binance.com" in page.url:
-                    if page.get_by_text(re.compile("Understand")).count() > 0:
-                        page.get_by_role("button", name=re.compile("Understand")).first.click(timeout=1200, force=True)
+                    if page.get_by_role("button", name=re.compile(r"^Understand$")).count() > 0:
+                        page.get_by_role("button", name=re.compile(r"^Understand$")).first.click(timeout=1200, force=True)
 
-                    if page.get_by_text(re.compile("知道了")).count() > 0:
-                        page.get_by_role("button", name=re.compile("知道了")).first.click(timeout=1200, force=True)
+                    if page.get_by_role("button", name=re.compile(r"^知道了$")).count() > 0:
+                        page.get_by_role("button", name=re.compile(r"^知道了$")).first.click(timeout=1200, force=True)
 
-                    if page.get_by_text(re.compile("好的")).count() > 0:
-                        page.get_by_role("button", name=re.compile("好的")).first.click(timeout=1200, force=True)
+                    if page.get_by_role("button", name=re.compile(r"^好的$")).count() > 0:
+                        page.get_by_role("button", name=re.compile(r"^好的$")).first.click(timeout=1200, force=True)
 
-                    if page.get_by_text(re.compile("登录")).count() > 0 and page.get_by_text(re.compile("邮箱/手机号码")).count() > 0 and page.get_by_text(re.compile("用手机相机扫描")).count() == 0:
-                        page.get_by_role("button", name=re.compile("登录")).first.click(timeout=1200, force=True)
+                    if page.get_by_role("button", name=re.compile(r"^已知晓$")).count() > 0:
+                        page.get_by_role("button", name=re.compile(r"^已知晓$")).first.click(timeout=1200, force=True)
 
-                    if page.get_by_text(re.compile("刷新二维码")).count() > 0:
-                        page.get_by_role("button", name=re.compile("刷新二维码")).first.click(timeout=1200, force=True)
+                    if page.get_by_role("button", name=re.compile(r"^二维码登录$")).count() > 0 and page.get_by_text(re.compile("扫码登录")).count() == 0:
+                        page.get_by_role("button", name=re.compile(r"^二维码登录$")).first.click(timeout=1200, force=True)
 
-                    if page.get_by_text(re.compile("保持登录状态")).count() > 0:
-                        page.get_by_role("button", name=re.compile("是")).first.click(timeout=1200, force=True)
+                    if page.get_by_role("button", name=re.compile(r"^刷新二维码$")).count() > 0:
+                        page.get_by_role("button", name=re.compile(r"^刷新二维码$")).first.click(timeout=1200, force=True)
+
+                    if page.get_by_role("button", name=re.compile(r"^登录失败$")).count() > 0:
+                        page.get_by_role("button", name=re.compile(r"^登录失败$")).first.click(timeout=1200, force=True)
+
+                    if page.get_by_role("button", name=re.compile(r"^登录$")).count() > 0 and page.get_by_text(re.compile(r"^邮箱/手机号码$")).count() > 0 and page.get_by_text(re.compile(r"^用手机相机扫描$")).count() == 0:
+                        page.get_by_role("button", name=re.compile(r"^登录$")).first.click(timeout=1200, force=True)
+
+                    if page.get_by_role("button", name=re.compile(r"^是$")).count() > 0:
+                        page.get_by_role("button", name=re.compile(r"^是$")).first.click(timeout=1200, force=True)
                 else:
                     update_p20t_from_context()
             except:
@@ -237,4 +245,3 @@ if __name__ == "__main__":
     # p20t = token_dict["p20t"]
     # result = place_order_web(csrftoken=csrftoken, p20t=p20t, orderAmount="5", timeIncrements="TEN_MINUTE", symbolName="BTCUSDT", payoutRatio="0.80", direction="LONG")
     # print("下单结果:", result)
-
