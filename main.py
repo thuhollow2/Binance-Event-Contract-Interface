@@ -188,8 +188,8 @@ def get_token(reset=False, headless=True):
 
             try:
                 if "accounts.binance.com" in page.url:
-                    if page.get_by_role("button", name=re.compile(r"^Understand$")).count() > 0:
-                        page.get_by_role("button", name=re.compile(r"^Understand$")).first.click(timeout=1200, force=True)
+                    if page.get_by_role("button", name=re.compile("Understand")).count() > 0:
+                        page.get_by_role("button", name=re.compile("Understand")).first.click(timeout=1200, force=True)
 
                     if page.get_by_role("button", name=re.compile(r"^知道了$")).count() > 0:
                         page.get_by_role("button", name=re.compile(r"^知道了$")).first.click(timeout=1200, force=True)
@@ -245,3 +245,4 @@ if __name__ == "__main__":
     # p20t = token_dict["p20t"]
     # result = place_order_web(csrftoken=csrftoken, p20t=p20t, orderAmount="5", timeIncrements="TEN_MINUTE", symbolName="BTCUSDT", payoutRatio="0.80", direction="LONG")
     # print("下单结果:", result)
+
