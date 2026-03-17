@@ -191,14 +191,14 @@ def get_token(reset=False, headless=True):
                     if page.get_by_role("button", name=re.compile("Understand")).count() > 0:
                         page.get_by_role("button", name=re.compile("Understand")).first.click(timeout=1200, force=True)
 
-                    if page.get_by_role("button", name=re.compile(r"^知道了$")).count() > 0:
-                        page.get_by_role("button", name=re.compile(r"^知道了$")).first.click(timeout=1200, force=True)
+                    if page.get_by_role("button", name=re.compile("知道了")).count() > 0:
+                        page.get_by_role("button", name=re.compile("知道了")).first.click(timeout=1200, force=True)
 
                     if page.get_by_role("button", name=re.compile(r"^好的$")).count() > 0:
                         page.get_by_role("button", name=re.compile(r"^好的$")).first.click(timeout=1200, force=True)
 
-                    if page.get_by_role("button", name=re.compile(r"^已知晓$")).count() > 0:
-                        page.get_by_role("button", name=re.compile(r"^已知晓$")).first.click(timeout=1200, force=True)
+                    if page.get_by_role("button", name=re.compile("已知晓")).count() > 0:
+                        page.get_by_role("button", name=re.compile("已知晓")).first.click(timeout=1200, force=True)
 
                     if page.get_by_role("button", name=re.compile(r"^二维码登录$")).count() > 0 and page.get_by_text(re.compile("扫码登录")).count() == 0:
                         page.get_by_role("button", name=re.compile(r"^二维码登录$")).first.click(timeout=1200, force=True)
@@ -245,4 +245,3 @@ if __name__ == "__main__":
     # p20t = token_dict["p20t"]
     # result = place_order_web(csrftoken=csrftoken, p20t=p20t, orderAmount="5", timeIncrements="TEN_MINUTE", symbolName="BTCUSDT", payoutRatio="0.80", direction="LONG")
     # print("下单结果:", result)
-
