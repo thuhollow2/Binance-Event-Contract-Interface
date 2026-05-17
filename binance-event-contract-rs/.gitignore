@@ -1,0 +1,5 @@
+target/
+token.json
+qrcode.jpg
+qrcode.png
+.browser-profile/

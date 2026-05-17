@@ -58,3 +58,17 @@ python main.py
 
 
 即可运行脚本，脚本会在当前目录下生成 `token.json` 文件保存 Web 端凭证信息（`csrftoken`、`p20t`、`expirationTimestamp`）；用户可根据需要调用 `place_order_web()` 函数进行下单操作。
+
+---
+# Rust 版本
+
+仓库下已新增独立 Rust 子工程 `binance-event-contract-rs/`，不影响现有 Python 脚本。
+
+在该目录下可执行：
+
+```shell
+cargo check
+cargo run -- get-token
+```
+
+Rust 版本已经拆成多模块结构，并会优先截取二维码元素、失败时回退整页截图保存为 `qrcode.png`，同时支持 `-v` 查看恢复日志。成功后同样生成 `token.json`。详细说明见 `binance-event-contract-rs/README.md`。
