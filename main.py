@@ -129,7 +129,7 @@ def get_token(reset=False, headless=True):
         def on_request_finished(req):
             try:
                 url = req.url
-                if "https://accounts.binance.com/bapi/accounts/v2/public/qrcode/login/get" in url:
+                if "https://accounts.binance.com/bapi/accounts/v3/public/qrcode/login/get" in url:
                     resp = req.response()
                     if not resp: return
                     data = resp.json()
