@@ -118,7 +118,7 @@ def get_token(reset=False, headless=True):
         def on_request(req):
             try:
                 url = req.url
-                if "https://www.binance.com/fapi/v1/ticker/24hr" in url:
+                if "https://www.binance.com/bapi/compliance/v2/private/compliance/account/login" in url:
                     token = req.headers.get("csrftoken", "")
                     if not token: return
                     nonlocal csrftoken
